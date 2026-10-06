@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1d2330; --muted: #5d6677; --line: #dde1e8; --hover: #eef1f6;
+  --accent: #2563eb; --accent-soft: #dbe7ff;
+  --fk: #1e3a8a; --code: #15803d; --name: #8a94a6; --sel: #d97706;
+  --op-i: #c6efce; --op-u: #ffeb9c; --op-d: #ffc7ce; --op-m: #e4d1f5; --op-s: #ddebf7; --op-q: #ededed; --op-text: #1d2330;
+  --hi: #16a34a; --mid: #ca8a04; --lo: #dc2626;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151b; --panel: #1a1e26; --text: #e4e7ec; --muted: #9aa3b2; --line: #2d333f; --hover: #232936;
+    --accent: #6ea0ff; --accent-soft: #1f2d4a;
+    --fk: #8fb0ff; --code: #4ade80; --name: #6b7385; --sel: #fbbf24;
+    --op-i: #1f4d2c; --op-u: #574a12; --op-d: #5c2229; --op-m: #43305a; --op-s: #1f3b57; --op-q: #33373f; --op-text: #e4e7ec;
+    --hi: #4ade80; --mid: #facc15; --lo: #f87171;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151b; --panel: #1a1e26; --text: #e4e7ec; --muted: #9aa3b2; --line: #2d333f; --hover: #232936;
+  --accent: #6ea0ff; --accent-soft: #1f2d4a;
+  --fk: #8fb0ff; --code: #4ade80; --name: #6b7385; --sel: #fbbf24;
+  --op-i: #1f4d2c; --op-u: #574a12; --op-d: #5c2229; --op-m: #43305a; --op-s: #1f3b57; --op-q: #33373f; --op-text: #e4e7ec;
+  --hi: #4ade80; --mid: #facc15; --lo: #f87171;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font: 14px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; }
+header { display: flex; align-items: center; gap: 16px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+header .meta { color: var(--muted); font-size: 12px; }
+nav { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+nav button, .btn { border: 1px solid var(--line); background: var(--panel); color: var(--text); padding: 6px 12px; border-radius: 6px; cursor: pointer; font: inherit; }
+nav button.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.btn:hover, nav button:hover { background: var(--hover); }
+main { flex: 1; min-height: 0; display: flex; }
+.view { display: none; flex: 1; min-height: 0; }
+.view.active { display: flex; }
+aside { width: 280px; flex-shrink: 0; background: var(--panel); border-right: 1px solid var(--line); padding: 12px; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+.detail { width: 400px; flex-shrink: 0; background: var(--panel); border-left: 1px solid var(--line); padding: 12px 14px; overflow: auto; }
+.grow { flex: 1; min-width: 0; min-height: 0; position: relative; }
+#cy { position: absolute; inset: 0; }
+label.ctl { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+input[type=text], input[type=search], select { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font: inherit; }
+.section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 4px; font-weight: 600; }
+.list { border: 1px solid var(--line); border-radius: 6px; overflow: auto; flex: 1; min-height: 120px; }
+.list div { padding: 4px 8px; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; white-space: nowrap; }
+.list div:hover { background: var(--hover); }
+.list div.sel { background: var(--accent-soft); color: var(--accent); }
+.list .n { color: var(--muted); font-size: 12px; }
+h2 { font-size: 15px; margin: 0 0 4px; word-break: break-all; }
+h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 16px 0 6px; }
+table.grid { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.grid th, table.grid td { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: left; vertical-align: top; }
+table.grid th { color: var(--muted); font-weight: 600; font-size: 12px; position: sticky; top: 0; background: var(--panel); }
+.pill { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 4px; font-size: 12px; font-weight: 600; text-align: center; color: var(--op-text); }
+.op-I { background: var(--op-i); } .op-U { background: var(--op-u); } .op-D, .op-T { background: var(--op-d); }
+.op-M { background: var(--op-m); } .op-S { background: var(--op-s); } .op-Q { background: var(--op-q); }
+.conf { font-weight: 600; } .conf.hi { color: var(--hi); } .conf.mid { color: var(--mid); } .conf.lo { color: var(--lo); }
+.muted { color: var(--muted); } .small { font-size: 12px; }
+.legend { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+.legend span.sw { display: inline-block; width: 26px; height: 0; border-top: 3px solid; vertical-align: middle; margin-right: 6px; }
+a.lnk { color: var(--accent); cursor: pointer; text-decoration: none; }
+a.lnk:hover { text-decoration: underline; }
+.pad { padding: 16px; overflow: auto; flex: 1; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+.matrix-wrap { overflow: auto; flex: 1; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+table.matrix { border-collapse: separate; border-spacing: 0; font-size: 12px; }
+table.matrix th, table.matrix td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); padding: 2px 4px; text-align: center; background: var(--panel); }
+table.matrix thead th { position: sticky; top: 0; z-index: 2; height: 170px; vertical-align: bottom; }
+table.matrix thead th div { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; max-height: 160px; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+table.matrix th.rowh { position: sticky; left: 0; z-index: 1; text-align: left; white-space: nowrap; cursor: pointer; }
+table.matrix thead th.rowh { z-index: 3; }
+table.matrix tr:hover td, table.matrix tr:hover th.rowh { background: var(--hover); }
+.toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.toolbar input[type=search], .toolbar select { width: auto; min-width: 200px; }
+pre.mermaid-out { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); padding: 8px; border-radius: 6px; font-size: 12px; max-height: 260px; overflow: auto; }
+.empty { color: var(--muted); padding: 24px; text-align: center; }
+.warn { color: var(--lo); }
+.timeline { position: relative; height: 22px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+.timeline .mark { position: absolute; top: 3px; bottom: 3px; min-width: 4px; border-radius: 3px; background: var(--accent); opacity: .85; }
+.timeline .mark.dis { background: var(--name); }
+pre.cmd { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 12px; margin: 4px 0 0; max-height: 200px; overflow: auto; }
+.tag { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); margin-left: 4px; }
+@media (max-width: 900px) {
+  main { flex-direction: column; }
+  .view.active { flex-direction: column; overflow: auto; }
+  aside, .detail { width: auto; border: none; border-bottom: 1px solid var(--line); }
+  .grow { min-height: 420px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title"></h1>
+  <span class="meta" id="meta"></span>
+  <nav>
+    <button data-view="graph" class="active">Relationships</button>
+    <button data-view="impact">Impact</button>
+    <button data-view="matrix">CRUD matrix</button>
+    <button data-view="modules">Procedures</button>
+    <button data-view="jobs">Batch jobs</button>
+    <button data-view="review">Review</button>
+    <button id="themeBtn" title="Toggle theme">◐</button>
+  </nav>
+</header>
+<main>
+  <!-- Relationships -->
+  <section class="view active" id="view-graph">
+    <aside>
+      <div>
+        <p class="section-title">Tables</p>
+        <input type="search" id="tblSearch" placeholder="Search tables…">
+      </div>
+      <div class="list" id="tblList"></div>
+      <div>
+        <p class="section-title">Show</p>
+        <label class="ctl">Neighbourhood depth
+          <select id="depth" style="width:auto"><option value="1">1 hop</option><option value="2" selected>2 hops</option><option value="0">Whole database</option></select>
+        </label>
+      </div>
+      <div>
+        <label class="ctl">Min confidence <b id="confVal">50</b></label>
+        <input type="range" id="minConf" min="0" max="100" step="5" value="50" style="width:100%">
+      </div>
+      <div class="legend">
+        <label class="ctl"><input type="checkbox" id="srcFk" checked><span class="sw" style="border-color:var(--fk)"></span>Declared foreign key</label>
+        <label class="ctl"><input type="checkbox" id="srcCode" checked><span class="sw" style="border-color:var(--code)"></span>Joined in SQL code</label>
+        <label class="ctl"><input type="checkbox" id="srcName" checked><span class="sw" style="border-color:var(--name);border-top-style:dashed"></span>Name match only</label>
+        <span class="muted">Arrow points to the parent (lookup) table.</span>
+      </div>
+      <button class="btn" id="mermaidBtn">Export visible graph as Mermaid</button>
+    </aside>
+    <div class="grow"><div id="cy"></div></div>
+    <div class="detail" id="tblDetail"><div class="empty">Pick a table on the left or click a node.</div></div>
+  </section>
+
+  <!-- Impact -->
+  <section class="view" id="view-impact">
+    <div class="pad">
+      <div class="toolbar">
+        <select id="impTable"></select>
+        <select id="impColumn"><option value="">(whole table)</option></select>
+        <label class="ctl">Related tables from confidence <input type="number" id="impConf" value="50" min="0" max="100" style="width:64px"></label>
+      </div>
+      <div id="impactOut"></div>
+    </div>
+  </section>
+
+  <!-- Matrix -->
+  <section class="view" id="view-matrix">
+    <div class="pad" style="display:flex;flex-direction:column">
+      <div class="toolbar">
+        <input type="search" id="mxTable" placeholder="Filter tables…">
+        <input type="search" id="mxMod" placeholder="Filter procedures…">
+        <label class="ctl"><input type="checkbox" id="mxProcOnly" checked>Procedures only</label>
+        <label class="ctl"><input type="checkbox" id="mxWriteOnly">Writes only</label>
+        <span class="muted small">I insert · U update · D delete · M merge · T truncate · S select · ? referenced</span>
+      </div>
+      <div class="matrix-wrap"><table class="matrix" id="matrix"></table></div>
+    </div>
+  </section>
+
+  <!-- Modules -->
+  <section class="view" id="view-modules">
+    <aside>
+      <input type="search" id="modSearch" placeholder="Search procedures, views, triggers…">
+      <div class="list" id="modList"></div>
+    </aside>
+    <div class="pad" id="modDetail"><div class="empty">Pick an object.</div></div>
+  </section>
+
+  <!-- Jobs -->
+  <section class="view" id="view-jobs">
+    <aside>
+      <input type="search" id="jobSearch" placeholder="Search jobs…">
+      <div class="list" id="jobList"></div>
+    </aside>
+    <div class="pad" id="jobDetail"></div>
+  </section>
+
+  <!-- Review -->
+  <section class="view" id="view-review">
+    <div class="pad" id="reviewOut"></div>
+  </section>
+</main>
+<script>/*__CYTOSCAPE__*/</script>
+<script id="data" type="application/json">/*__DATA__*/</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const T = Object.fromEntries(D.tables.map(t => [t.key, t]));
+const M = Object.fromEntries(D.modules.map(m => [m.key, m]));
+const name = k => (T[k] || M[k] || {display: k}).display;
+const OPL = {INSERT:'I', UPDATE:'U', DELETE:'D', MERGE:'M', TRUNCATE:'T', SELECT:'S', REFERENCED:'?'};
+const pill = op => `<span class="pill op-${OPL[op] === '?' ? 'Q' : OPL[op]}" title="${op}">${OPL[op]}</span>`;
+const confCls = c => c >= 70 ? 'hi' : c >= 40 ? 'mid' : 'lo';
+function profText(c) {
+  const p = c.profile; if (!p) return '';
+  const b = [];
+  if (p.null_pct) b.push(p.null_pct + '% null');
+  if (p.distinct != null) b.push(p.distinct + ' distinct');
+  if (!c.sensitive && p.values) { const tot = p.values.reduce((s, v) => s + v[1], 0) || 1; b.push(p.values.slice(0, 8).map(v => (v[0] ?? 'NULL') + ' ' + Math.round(100 * v[1] / tot) + '%').join(', ') + (p.values.length > 8 ? ' …' : '')); }
+  else if ('min' in p) b.push(p.min + ' … ' + p.max);
+  if (p.formats) b.push('format ' + p.formats.slice(0, 2).map(f => f[0]).join(' / '));
+  if (!c.sensitive && p.examples) b.push('e.g. ' + p.examples.join(', '));
+  return b.join(' · ');
+}
+const notesHtml = n => n ? `<h3>Business notes</h3><div class="small" style="white-space:pre-wrap">${esc(n)}</div>` : '';
+const usageBy = {}; const usageByMod = {};
+for (const u of D.usage) { (usageBy[u.object] ||= []).push(u); (usageByMod[u.module] ||= []).push(u); }
+const callers = {};
+for (const m of D.modules) for (const c of m.calls) (callers[c.target] ||= new Set()).add(m.key);
+
+$('#title').textContent = `${D.meta.database || ''} explorer`;
+$('#meta').textContent = `${D.meta.server || ''} · analyzed ${D.meta.analyzed_at || ''} · ${D.tables.filter(t => t.kind === 'table').length} tables · ${D.modules.filter(m => m.type_code === 'P').length} procedures · ${D.edges.length} candidate relationships`;
+
+// ---------- navigation & theme
+function show(view) {
+  document.querySelectorAll('nav button[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
+  if (view === 'graph' && cy) cy.resize();
+  if (view === 'matrix') renderMatrix();
+  if (view === 'jobs' && !$('#jobDetail').innerHTML) renderJobsOverview();
+}
+document.querySelectorAll('nav button[data-view]').forEach(b => b.onclick = () => show(b.dataset.view));
+$('#themeBtn').onclick = () => {
+  const cur = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.dataset.theme = cur === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem('dbx-theme', document.documentElement.dataset.theme); } catch (e) {}
+  styleGraph();
+};
+try { const t = localStorage.getItem('dbx-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+
+// ---------- relationships graph
+let cy = null, selected = null;
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function edgeKind(e) { return e.sources.fk ? 'fk' : e.sources.code ? 'code' : 'name'; }
+function edgeVisible(e) {
+  if (e.confidence < +$('#minConf').value) return false;
+  const k = edgeKind(e);
+  if (k === 'fk') return $('#srcFk').checked;
+  if (k === 'code') return $('#srcCode').checked;
+  return $('#srcName').checked;
+}
+function tableEdges() { return D.edges.filter(e => T[e.a.table]?.kind === 'table' && T[e.b.table]?.kind === 'table' && edgeVisible(e)); }
+
+function graphData() {
+  const edges = tableEdges();
+  const depth = +$('#depth').value;
+  let keep;
+  if (selected && depth > 0) {
+    keep = new Set([selected]);
+    for (let d = 0; d < depth; d++) {
+      const add = [];
+      for (const e of edges) {
+        if (keep.has(e.a.table)) add.push(e.b.table);
+        if (keep.has(e.b.table)) add.push(e.a.table);
+      }
+      add.forEach(k => keep.add(k));
+    }
+  } else {
+    keep = new Set(edges.flatMap(e => [e.a.table, e.b.table]));
+    if (selected) keep.add(selected);
+  }
+  // Merge parallel column edges between the same pair of tables into one drawn edge.
+  const pairs = {};
+  for (const e of edges) {
+    if (!keep.has(e.a.table) || !keep.has(e.b.table) || e.a.table === e.b.table) continue;
+    const child = e.parent === 'a' ? e.b : e.a, parent = e.parent === 'a' ? e.a : e.b;
+    const id = child.table + '>' + parent.table;
+    const p = pairs[id] ||= {id, source: child.table, target: parent.table, cols: [], conf: 0, kind: 'name', directed: !!e.parent};
+    p.cols.push(`${child.column} → ${parent.column}`);
+    p.conf = Math.max(p.conf, e.confidence);
+    const k = edgeKind(e);
+    if (k === 'fk' || (k === 'code' && p.kind !== 'fk')) p.kind = k;
+    p.directed = p.directed || !!e.parent;
+  }
+  const deg = {};
+  Object.values(pairs).forEach(p => { deg[p.source] = (deg[p.source] || 0) + 1; deg[p.target] = (deg[p.target] || 0) + 1; });
+  return [
+    ...[...keep].map(k => ({data: {id: k, label: T[k].display.replace(/^dbo\./, ''), deg: deg[k] || 0}})),
+    ...Object.values(pairs).map(p => ({data: {...p, label: p.cols.length > 2 ? p.cols.length + ' columns' : p.cols.join('\n')}})),
+  ];
+}
+
+function styleGraph() {
+  if (!cy) return;
+  cy.style([
+    {selector: 'node', style: {'label': 'data(label)', 'font-size': 11, 'color': css('--text'), 'text-valign': 'bottom', 'text-margin-y': 4,
+      'background-color': css('--accent'), 'width': 'mapData(deg, 0, 20, 14, 40)', 'height': 'mapData(deg, 0, 20, 14, 40)',
+      'text-background-color': css('--bg'), 'text-background-opacity': 0.8, 'text-background-padding': 1}},
+    {selector: 'node.focus', style: {'background-color': css('--sel'), 'width': 34, 'height': 34, 'font-weight': 'bold'}},
+    {selector: 'edge', style: {'width': 'mapData(conf, 0, 100, 1, 3.5)', 'curve-style': 'bezier', 'line-color': css('--name'),
+      'target-arrow-color': css('--name'), 'target-arrow-shape': 'triangle', 'arrow-scale': 0.9, 'opacity': 0.85,
+      'font-size': 9, 'color': css('--muted'), 'text-rotation': 'autorotate', 'text-wrap': 'wrap'}},
+    {selector: 'edge[kind = "name"]', style: {'line-style': 'dashed'}},
+    {selector: 'edge[kind = "fk"]', style: {'line-color': css('--fk'), 'target-arrow-color': css('--fk')}},
+    {selector: 'edge[kind = "code"]', style: {'line-color': css('--code'), 'target-arrow-color': css('--code')}},
+    {selector: 'edge[!directed]', style: {'target-arrow-shape': 'none'}},
+    {selector: 'edge.showlabel', style: {'label': 'data(label)'}},
+    {selector: '.faded', style: {'opacity': 0.12}},
+  ]);
+}
+
+function drawGraph() {
+  const els = graphData();
+  if (!cy) {
+    cy = cytoscape({container: $('#cy'), elements: [], wheelSensitivity: 0.25, minZoom: 0.05, maxZoom: 3});
+    styleGraph();
+    cy.on('tap', 'node', ev => selectTable(ev.target.id()));
+    cy.on('mouseover', 'node', ev => {
+      const n = ev.target; cy.elements().addClass('faded');
+      n.closedNeighborhood().removeClass('faded'); n.connectedEdges().addClass('showlabel');
+    });
+    cy.on('mouseout', 'node', () => { cy.elements().removeClass('faded'); cy.edges().removeClass('showlabel'); markFocus(); });
+  }
+  cy.elements().remove();
+  cy.add(els);
+  markFocus();
+  const n = cy.nodes().length;
+  const layout = selected && +$('#depth').value > 0 && n <= 40
+    ? {name: 'concentric', animate: false, minNodeSpacing: 60, concentric: nd => nd.id() === selected ? 100 : (nd.edgesWith(cy.getElementById(selected)).length ? 50 : 10), levelWidth: () => 40}
+    : {name: 'cose', animate: false, randomize: true, nodeRepulsion: () => 600000, nodeOverlap: 40, idealEdgeLength: () => 120,
+       edgeElasticity: () => 80, gravity: 0.3, componentSpacing: 120, numIter: n > 150 ? 800 : 1500, padding: 30};
+  cy.layout(layout).run();
+  cy.fit(undefined, 40);
+  if (cy.zoom() > 1.1) { cy.zoom(1.1); cy.center(); }
+}
+function markFocus() {
+  if (!cy) return;
+  cy.nodes().removeClass('focus');
+  if (selected) { cy.getElementById(selected).addClass('focus'); cy.getElementById(selected).connectedEdges().addClass('showlabel'); }
+}
+
+function renderTableList() {
+  const q = $('#tblSearch').value.toLowerCase();
+  const cnt = {};
+  for (const e of D.edges) if (e.confidence >= 40) { cnt[e.a.table] = (cnt[e.a.table] || 0) + 1; cnt[e.b.table] = (cnt[e.b.table] || 0) + 1; }
+  $('#tblList').innerHTML = D.tables.filter(t => t.kind === 'table' && t.display.toLowerCase().includes(q))
+    .map(t => `<div data-k="${esc(t.key)}" class="${t.key === selected ? 'sel' : ''}"><span>${esc(t.display)}</span><span class="n">${cnt[t.key] || 0}</span></div>`).join('')
+    || '<div class="muted">No match</div>';
+  $('#tblList').querySelectorAll('[data-k]').forEach(d => d.onclick = () => selectTable(d.dataset.k));
+}
+
+function selectTable(k) {
+  selected = k;
+  renderTableList();
+  drawGraph();
+  renderTableDetail(k);
+}
+
+function renderTableDetail(k) {
+  const t = T[k];
+  const rel = D.edges.filter(e => (e.a.table === k || e.b.table === k) && e.confidence >= +$('#minConf').value);
+  const keyCols = new Set(rel.flatMap(e => [e.a, e.b]).filter(s => s.table === k).map(s => s.column));
+  const uses = (usageBy[k] || []);
+  const byMod = {};
+  for (const u of uses) (byMod[u.module] ||= new Set()).add(u.op);
+  $('#tblDetail').innerHTML = `
+    <h2>${esc(t.display)}</h2>
+    <div class="muted small">${t.rows != null ? Number(t.rows).toLocaleString() + ' rows · ' : ''}prefix <b>${esc(t.prefix || '(none)')}</b> (${esc(t.prefix_method)})${t.pk.length ? '' : ' · <b>no primary key</b>'}</div>
+    <div class="toolbar" style="margin-top:8px"><button class="btn" onclick="openImpact('${esc(k)}')">Impact analysis →</button></div>
+    ${notesHtml(t.notes)}
+    <h3>Relationships (${rel.length})</h3>
+    ${rel.length ? `<table class="grid"><tr><th>Column</th><th>Other table</th><th>Conf.</th></tr>${rel.map(e => {
+      const me = e.a.table === k ? e.a : e.b, other = e.a.table === k ? e.b : e.a;
+      const role = !e.parent ? '↔' : ((e.parent === 'a' ? e.a : e.b) === me ? '←' : '→');
+      return `<tr title="${esc(e.evidence.join('\n'))}"><td>${esc(me.column)}</td><td>${role} <a class="lnk" onclick="selectTable('${esc(other.table)}')">${esc(name(other.table))}</a>.${esc(other.column)}</td><td class="conf ${confCls(e.confidence)}">${e.confidence}</td></tr>`;
+    }).join('')}</table><div class="muted small">→ this table references the other · ← the other references this table · hover a row for evidence</div>` : '<div class="muted">None at this confidence.</div>'}
+    <h3>Used by (${Object.keys(byMod).length})</h3>
+    ${Object.keys(byMod).length ? `<table class="grid">${Object.entries(byMod).sort((a, b) => name(a[0]).localeCompare(name(b[0]))).map(([m, ops]) =>
+      `<tr><td><a class="lnk" onclick="openModule('${esc(m)}')">${esc(name(m))}</a> <span class="tag">${esc(M[m]?.type || '')}</span></td><td>${[...ops].map(pill).join(' ')}</td></tr>`).join('')}</table>` : '<div class="muted">Not referenced by any procedure, view, trigger or function.</div>'}
+    <h3>Columns (${t.columns.length})</h3>
+    <table class="grid"><tr><th>Column</th><th>Logical</th><th>Type</th></tr>${t.columns.map(c =>
+      `<tr><td>${c.pk ? '🔑 ' : ''}${keyCols.has(c.name.toLowerCase()) ? '<b>' + esc(c.name) + '</b>' : esc(c.name)}${c.sensitive ? ` <span class="tag" title="Sensitive">🔒 ${esc(c.sensitive)}</span>` : ''}
+        ${c.check || c.default ? `<div class="small muted">${c.check ? 'CHECK ' + esc(c.check) : ''} ${c.default ? 'default ' + esc(c.default) : ''}</div>` : ''}
+        ${c.profile ? `<div class="small muted">${esc(profText(c))}</div>` : ''}</td><td class="muted">${esc(c.logical)}</td><td class="muted small">${esc(c.type)}${c.nullable ? '' : ' not null'}</td></tr>`).join('')}</table>
+    ${t.test_notes && t.test_notes.length ? `<h3>Test considerations</h3><ul class="small" style="padding-left:18px;margin:0">${t.test_notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}`;
+}
+
+function mermaid() {
+  if (!cy) return '';
+  const id = k => T[k].display.replace(/[^A-Za-z0-9_]/g, '_');
+  const nodes = cy.nodes().map(n => n.id());
+  const cols = {};
+  const lines = ['erDiagram'];
+  cy.edges().forEach(ed => {
+    const d = ed.data();
+    lines.push(`    ${id(d.target)} ${d.directed ? '||--o{' : '}o--o{'} ${id(d.source)} : "${d.cols.join(', ').replace(/"/g, "'")}"`);
+    d.cols.forEach(c => { const [cc, pc] = c.split(' → '); (cols[d.source] ||= new Set()).add(cc); (cols[d.target] ||= new Set()).add(pc); });
+  });
+  for (const k of nodes) {
+    const t = T[k]; const keep = cols[k] || new Set();
+    const shown = t.columns.filter(c => c.pk || keep.has(c.name.toLowerCase()));
+    if (!shown.length) continue;
+    lines.push(`    ${id(k)} {`);
+    for (const c of shown) lines.push(`        ${c.type.split('(')[0]} ${c.name.replace(/[^A-Za-z0-9_]/g, '_')}${c.pk ? ' PK' : keep.has(c.name.toLowerCase()) ? ' FK' : ''}`);
+    lines.push('    }');
+  }
+  return lines.join('\n');
+}
+$('#mermaidBtn').onclick = () => {
+  const text = mermaid();
+  navigator.clipboard?.writeText(text).catch(() => {});
+  const el = document.createElement('div');
+  el.innerHTML = `<h3>Mermaid (copied to clipboard)</h3><pre class="mermaid-out">${esc(text)}</pre>`;
+  $('#tblDetail').prepend(el);
+};
+
+['#minConf', '#depth', '#srcFk', '#srcCode', '#srcName'].forEach(s => $(s).addEventListener('input', () => {
+  $('#confVal').textContent = $('#minConf').value; drawGraph(); if (selected) renderTableDetail(selected);
+}));
+$('#tblSearch').oninput = renderTableList;
+
+// ---------- impact
+function computeImpact(k, col, minConf) {
+  const touches = u => !col || u.cols_read.includes(col) || u.cols_written.includes(col)
+    || u.details.includes('SELECT *') || u.details.includes('all columns') || u.source === 'catalog';
+  const direct = (usageBy[k] || []).filter(touches);
+  const viaView = []; const seen = new Set([k]); const frontier = [[k, []]];
+  while (frontier.length) {
+    const [obj, path] = frontier.pop();
+    for (const u of usageBy[obj] || []) {
+      if (obj !== k) viaView.push({...u, via: path.join(' → ')});
+      const m = M[u.module];
+      if (m && ['V', 'IF', 'TF'].includes(m.type_code) && !seen.has(u.module)) {
+        if (obj === k && !touches(u)) continue;
+        seen.add(u.module); frontier.push([u.module, [...path, m.display]]);
+      }
+    }
+  }
+  const affected = new Set([...direct, ...viaView].map(u => u.module));
+  const chain = []; const stack = [...affected]; const visited = new Set(affected);
+  while (stack.length) {
+    const callee = stack.pop();
+    for (const c of callers[callee] || []) { chain.push({caller: c, calls: callee}); if (!visited.has(c)) { visited.add(c); stack.push(c); } }
+  }
+  const triggers = D.modules.filter(m => m.type_code === 'TR' && m.parent === k);
+  const everything = new Set([...direct, ...viaView].map(u => u.module).concat(chain.map(c => c.caller)));
+  const jobs = (D.jobs || []).map(j => ({j, via: j.procedures.filter(p => everything.has(p)),
+      step: j.steps.some(s => s.refs.some(r => r.object === k))})).filter(x => x.via.length || x.step);
+  const related = [];
+  for (const e of D.edges) {
+    if (e.confidence < minConf) continue;
+    for (const [me, other] of [['a', 'b'], ['b', 'a']])
+      if (e[me].table === k && (!col || e[me].column === col))
+        related.push({e, me: e[me], other: e[other], role: e.parent === me ? 'is referenced by' : e.parent === other ? 'references' : 'shares key with'});
+  }
+  return {direct, viaView, chain, triggers, related, jobs};
+}
+
+function opsTable(rows, showVia) {
+  if (!rows.length) return '<div class="muted">None.</div>';
+  const order = ['INSERT', 'UPDATE', 'DELETE', 'MERGE', 'TRUNCATE', 'SELECT', 'REFERENCED'];
+  rows = [...rows].sort((a, b) => order.indexOf(a.op) - order.indexOf(b.op) || name(a.module).localeCompare(name(b.module)));
+  return `<table class="grid"><tr><th>Op</th><th>Object</th>${showVia ? '<th>Via</th>' : ''}<th>Columns written</th><th>Columns read</th><th>Lines</th><th>Notes</th></tr>${rows.map(u => `<tr>
+    <td>${pill(u.op)}</td><td><a class="lnk" onclick="openModule('${esc(u.module)}')">${esc(name(u.module))}</a> <span class="tag">${esc(M[u.module]?.type || '')}</span></td>
+    ${showVia ? `<td class="small">${esc(u.via || name(u.object))}</td>` : ''}
+    <td class="small">${esc(u.cols_written.join(', '))}</td><td class="small muted">${esc(u.cols_read.join(', '))}</td>
+    <td class="small muted">${esc(u.lines.join(', '))}</td><td class="small">${u.dynamic ? '<span class="tag">dynamic SQL</span>' : ''}${esc(u.details.join('; '))}</td></tr>`).join('')}</table>`;
+}
+
+function renderImpact() {
+  const k = $('#impTable').value, col = $('#impColumn').value || null, minConf = +$('#impConf').value;
+  if (!k) return;
+  const r = computeImpact(k, col, minConf);
+  const writes = r.direct.filter(u => !['SELECT', 'REFERENCED'].includes(u.op));
+  const reads = r.direct.filter(u => ['SELECT', 'REFERENCED'].includes(u.op));
+  const all = new Set([...r.direct, ...r.viaView].map(u => u.module).concat(r.chain.map(c => c.caller)));
+  $('#impactOut').innerHTML = `
+    <div class="cards">
+      <div class="card"><div class="muted small">Objects that write ${esc(col ? 'this column' : 'this table')}</div><div style="font-size:24px;font-weight:600">${new Set(writes.map(u => u.module)).size}</div></div>
+      <div class="card"><div class="muted small">Objects that read it</div><div style="font-size:24px;font-weight:600">${new Set(reads.map(u => u.module)).size}</div></div>
+      <div class="card"><div class="muted small">Indirect (views, callers)</div><div style="font-size:24px;font-weight:600">${new Set(r.viaView.map(u => u.module).concat(r.chain.map(c => c.caller))).size}</div></div>
+      <div class="card"><div class="muted small">Total objects to regression-test</div><div style="font-size:24px;font-weight:600">${all.size}</div></div>
+    </div>
+    ${col ? '<p class="muted small">Column filter keeps references where the column is named, plus SELECT *, INSERT without a column list and catalog-only references, because those may touch it too.</p>' : ''}
+    <h3>Writes</h3>${opsTable(writes)}
+    <h3>Reads</h3>${opsTable(reads)}
+    <h3>Through views / table functions</h3>${opsTable(r.viaView, true)}
+    <h3>Callers (procedures that call an affected object)</h3>
+    ${r.chain.length ? `<table class="grid"><tr><th>Caller</th><th>Calls</th></tr>${r.chain.map(c => `<tr><td><a class="lnk" onclick="openModule('${esc(c.caller)}')">${esc(name(c.caller))}</a></td><td>${esc(name(c.calls))}</td></tr>`).join('')}</table>` : '<div class="muted">None.</div>'}
+    <h3>Triggers on this table</h3>
+    ${r.triggers.length ? r.triggers.map(t => `<div><a class="lnk" onclick="openModule('${esc(t.key)}')">${esc(t.display)}</a> <span class="muted small">${esc((t.instead_of ? 'INSTEAD OF ' : 'AFTER ') + t.events.join(', '))}${t.disabled ? ' · disabled' : ''}</span></div>`).join('') : '<div class="muted">None.</div>'}
+    <h3>Scheduled jobs (batch runs to include in testing)</h3>
+    ${r.jobs.length ? `<table class="grid"><tr><th>Job</th><th>Schedule</th><th>Via</th></tr>${r.jobs.map(x => `<tr><td><a class="lnk" onclick="openJob('${esc(x.j.id)}')">${esc(x.j.name)}</a>${x.j.enabled ? '' : ' <span class="tag">disabled</span>'}</td><td class="small">${esc(x.j.schedules.filter(s => s.enabled).map(s => s.text).join('; ') || 'no active schedule')}</td><td class="small">${esc((x.via.length ? x.via.map(name) : ['job step SQL']).join(', '))}</td></tr>`).join('')}</table>` : '<div class="muted">None.</div>'}
+    <h3>Related tables (data dependencies)</h3>
+    ${r.related.length ? `<table class="grid"><tr><th>Column</th><th>Relationship</th><th>Conf.</th><th>Evidence</th></tr>${r.related.map(x => `<tr><td>${esc(x.me.column)}</td><td>${esc(x.role)} <a class="lnk" onclick="selectTable('${esc(x.other.table)}');show('graph')">${esc(name(x.other.table))}</a>.${esc(x.other.column)}</td><td class="conf ${confCls(x.e.confidence)}">${x.e.confidence}</td><td class="small muted">${esc(x.e.evidence.join('; '))}</td></tr>`).join('')}</table>` : '<div class="muted">None at this confidence.</div>'}`;
+}
+function fillImpactColumns() {
+  const t = T[$('#impTable').value];
+  $('#impColumn').innerHTML = '<option value="">(whole table)</option>' + (t ? t.columns.map(c => `<option value="${esc(c.name.toLowerCase())}">${esc(c.name)}</option>`).join('') : '');
+}
+$('#impTable').innerHTML = D.tables.map(t => `<option value="${esc(t.key)}">${esc(t.display)}${t.kind === 'view' ? ' (view)' : ''}</option>`).join('');
+$('#impTable').onchange = () => { fillImpactColumns(); renderImpact(); };
+$('#impColumn').onchange = renderImpact;
+$('#impConf').oninput = renderImpact;
+function openImpact(k) { $('#impTable').value = k; fillImpactColumns(); renderImpact(); show('impact'); }
+
+// ---------- matrix
+function renderMatrix() {
+  const tq = $('#mxTable').value.toLowerCase(), mq = $('#mxMod').value.toLowerCase();
+  const procOnly = $('#mxProcOnly').checked, writeOnly = $('#mxWriteOnly').checked;
+  const cell = {};
+  for (const u of D.usage) {
+    if (writeOnly && ['SELECT', 'REFERENCED'].includes(u.op)) continue;
+    if (procOnly && M[u.module]?.type_code !== 'P') continue;
+    if (!T[u.object]) continue;
+    (cell[u.object + '|' + u.module] ||= new Set()).add(OPL[u.op]);
+  }
+  const keys = Object.keys(cell);
+  const rows = [...new Set(keys.map(k => k.split('|')[0]))].filter(k => name(k).toLowerCase().includes(tq)).sort((a, b) => name(a).localeCompare(name(b)));
+  const cols = [...new Set(keys.map(k => k.split('|')[1]))].filter(k => name(k).toLowerCase().includes(mq)).sort((a, b) => name(a).localeCompare(name(b)));
+  const order = 'IUDMTS?';
+  $('#matrix').innerHTML = !rows.length || !cols.length ? '<tr><td class="empty">Nothing matches.</td></tr>' :
+    `<thead><tr><th class="rowh">Table \\ object (${rows.length} × ${cols.length})</th>${cols.map(c => `<th title="${esc(name(c))}"><div onclick="openModule('${esc(c)}')">${esc(name(c).replace(/^dbo\./, ''))}</div></th>`).join('')}</tr></thead><tbody>` +
+    rows.map(r => `<tr><th class="rowh" onclick="openImpact('${esc(r)}')">${esc(name(r))}</th>${cols.map(c => {
+      const s = cell[r + '|' + c]; if (!s) return '<td></td>';
+      return `<td>${[...order].filter(ch => s.has(ch)).map(ch => `<span class="pill op-${ch === '?' ? 'Q' : ch}">${ch}</span>`).join('')}</td>`;
+    }).join('')}</tr>`).join('') + '</tbody>';
+}
+['#mxTable', '#mxMod', '#mxProcOnly', '#mxWriteOnly'].forEach(s => $(s).addEventListener('input', renderMatrix));
+
+// ---------- modules
+function renderModList() {
+  const q = $('#modSearch').value.toLowerCase();
+  $('#modList').innerHTML = D.modules.filter(m => m.display.toLowerCase().includes(q))
+    .sort((a, b) => (a.type_code !== 'P') - (b.type_code !== 'P') || a.display.localeCompare(b.display))
+    .map(m => `<div data-k="${esc(m.key)}"><span>${esc(m.display)}</span><span class="n">${esc(m.type)}${m.dynamic_sql ? ' ⚠' : ''}</span></div>`).join('');
+  $('#modList').querySelectorAll('[data-k]').forEach(d => d.onclick = () => openModule(d.dataset.k));
+}
+function openModule(k) {
+  const m = M[k]; if (!m) return;
+  const uses = usageByMod[k] || [];
+  const calledBy = [...(callers[k] || [])];
+  $('#modDetail').innerHTML = `
+    <h2>${esc(m.display)} <span class="tag">${esc(m.type)}</span></h2>
+    ${m.type_code === 'TR' ? `<div class="muted">${m.instead_of ? 'INSTEAD OF' : 'AFTER'} ${esc(m.events.join(', '))} on <a class="lnk" onclick="openImpact('${esc(m.parent)}')">${esc(name(m.parent))}</a></div>` : ''}
+    ${m.risk ? `<div class="small" style="margin-top:4px">Risk score <b>${m.risk.score}</b>${m.risk.reasons.length ? ' · ' + esc(m.risk.reasons.join(', ')) : ''}${m.modified ? ' · modified ' + esc(m.modified.slice(0, 10)) : ''}</div>` : ''}
+    ${notesHtml(m.notes)}
+    ${m.parameters && m.parameters.length ? `<h3>Parameters</h3><table class="grid"><tr><th>Name</th><th>Type</th><th>Default</th><th>Output</th></tr>${m.parameters.map(p => `<tr><td>${esc(p.name)}</td><td class="muted">${esc(p.type)}</td><td>${p.default == null ? '<span class="muted">(required)</span>' : esc(p.default)}</td><td>${p.output ? 'yes' : ''}</td></tr>`).join('')}</table>` : ''}
+    ${m.metrics && m.metrics.lines ? `<div class="small muted" style="margin-top:8px">${m.metrics.lines} code lines · ${m.metrics.writes} write statements · branches ${m.metrics.branches} · loops ${m.metrics.loops} · cursors ${m.metrics.cursors} · transactions ${m.metrics.transactions} · TRY/CATCH ${m.metrics.try_catch ? 'yes' : 'no'}${m.fires_triggers && m.fires_triggers.length ? ' · fires ' + esc(m.fires_triggers.map(name).join(', ')) : ''}</div>` : ''}
+    ${m.encrypted ? '<p><b>Encrypted</b>: the definition cannot be read, so its table usage is unknown.</p>' : ''}
+    ${m.dynamic_sql ? `<p>⚠ <b>Dynamic SQL</b> at line(s) ${esc(m.dynamic_lines.join(', '))}. Tables named inside string literals were analyzed on a best-effort basis (marked "dynamic"); tables chosen at runtime cannot be detected.</p>` : ''}
+    ${m.run_by_jobs && m.run_by_jobs.length ? `<h3>Run by scheduled jobs</h3>${m.run_by_jobs.map(r => `<div><a class="lnk" onclick="openJob('${esc((D.jobs.find(j => j.name === r.job) || {}).id)}')">${esc(r.job)}</a> <span class="small muted">${r.step ? 'step ' + r.step + ' · ' : esc(r.how) + ' · '}${esc(r.schedule)}</span></div>`).join('')}` : ''}
+    ${m.errors && m.errors.length ? `<h3>Errors raised (negative-test oracle)</h3><table class="grid"><tr><th>Line</th><th>Kind</th><th>No.</th><th>Sev.</th><th>Message</th><th>Raised when</th></tr>${m.errors.map(e => `<tr><td class="muted">${e.line}</td><td class="small">${esc(e.kind)}</td><td>${esc(e.number ?? '')}</td><td>${esc(e.severity ?? '')}</td><td>${esc(e.message)}${e.warning ? `<div class="small warn">⚠ ${esc(e.warning)}</div>` : ''}</td><td class="small muted">${e.in_catch ? 'inside CATCH' : esc(e.condition || 'always / unconditional')}</td></tr>`).join('')}</table>` : ''}
+    <h3>Tables and views used</h3>${uses.length ? `<table class="grid"><tr><th>Op</th><th>Object</th><th>Columns written</th><th>Columns read</th><th>Lines</th></tr>${uses.map(u => `<tr><td>${pill(u.op)}</td><td><a class="lnk" onclick="openImpact('${esc(u.object)}')">${esc(name(u.object))}</a></td><td class="small">${esc(u.cols_written.join(', '))}</td><td class="small muted">${esc(u.cols_read.join(', '))}</td><td class="small muted">${esc(u.lines.join(', '))}${u.dynamic ? ' <span class="tag">dynamic</span>' : ''}</td></tr>`).join('')}</table>` : '<div class="muted">None found.</div>'}
+    <h3>Calls</h3>${m.calls.length ? m.calls.map(c => `<div>${M[c.target] ? `<a class="lnk" onclick="openModule('${esc(c.target)}')">${esc(name(c.target))}</a>` : esc(c.target) + ' <span class="tag">not in this database</span>'} <span class="muted small">${c.lines.length ? 'line ' + esc(c.lines.join(', ')) : ''}</span></div>`).join('') : '<div class="muted">None.</div>'}
+    <h3>Called by</h3>${calledBy.length ? calledBy.map(c => `<div><a class="lnk" onclick="openModule('${esc(c)}')">${esc(name(c))}</a></div>`).join('') : '<div class="muted">None.</div>'}
+    ${m.temp_tables.length ? `<h3>Temp tables</h3><div class="small muted">${esc(m.temp_tables.join(', '))}</div>` : ''}
+    ${m.unresolved.length ? `<h3>Names not found in this database</h3><div class="small muted">${esc(m.unresolved.join(', '))}</div>` : ''}
+    ${m.external.length ? `<h3>Cross-database references</h3><div class="small muted">${esc(m.external.join(', '))}</div>` : ''}`;
+  show('modules');
+}
+$('#modSearch').oninput = renderModList;
+
+// ---------- jobs
+const J = Object.fromEntries((D.jobs || []).map(j => [j.id, j]));
+const toMin = hhmm => { const [h, m] = (hhmm || '0:0').split(':').map(Number); return h * 60 + m; };
+function renderJobList() {
+  const q = $('#jobSearch').value.toLowerCase();
+  $('#jobList').innerHTML = `<div data-k="">Overview / timeline</div>` + (D.jobs || []).filter(j => j.name.toLowerCase().includes(q))
+    .map(j => `<div data-k="${esc(j.id)}"><span>${esc(j.name)}</span><span class="n">${j.warnings.length ? '⚠ ' + j.warnings.length : ''}${j.enabled ? '' : ' off'}</span></div>`).join('');
+  $('#jobList').querySelectorAll('[data-k]').forEach(d => d.onclick = () => d.dataset.k ? openJob(d.dataset.k) : renderJobsOverview());
+}
+function jobBar(j) {
+  return j.schedules.filter(s => s.start).map(s => {
+    const start = toMin(s.start);
+    const endTxt = (s.text.match(/and (\d\d:\d\d)/) || [])[1];
+    const end = s.interval_secs && endTxt ? toMin(endTxt) : start + 10;
+    return `<div class="mark ${s.enabled && j.enabled ? '' : 'dis'}" title="${esc(j.name + ': ' + s.text)}" style="left:${start / 14.4}%;width:${Math.max(0.5, (end - start) / 14.4)}%"></div>`;
+  }).join('');
+}
+function renderJobsOverview() {
+  const jobs = D.jobs || [];
+  if (!jobs.length) {
+    $('#jobDetail').innerHTML = `<div class="empty">${D.meta.jobs_error ? 'SQL Agent jobs could not be read: ' + esc(D.meta.jobs_error) + '<br>Reading them needs the SQLAgentReaderRole role in msdb.' : 'No SQL Agent jobs touch this database.'}</div>`;
+    return;
+  }
+  $('#jobDetail').innerHTML = `<h2>Batch timeline</h2>
+    <p class="muted small">Jobs that touch ${esc(D.meta.database || 'this database')}, ordered by start time. Bars span 00:00–24:00; intraday schedules show their active window.${D.meta.jobs_skipped ? ' ' + D.meta.jobs_skipped + ' other job(s) on this server do not touch this database and are hidden.' : ''}</p>
+    <table class="grid"><tr><th style="width:24%">Job</th><th>Schedule</th><th style="width:30%">Day<div style="display:flex;justify-content:space-between;font-weight:400"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div></th><th>Last run</th><th>Avg / max</th><th>Writes</th></tr>
+    ${jobs.map(j => `<tr><td><a class="lnk" onclick="openJob('${esc(j.id)}')">${esc(j.name)}</a>${j.enabled ? '' : ' <span class="tag">disabled</span>'}${j.warnings.length ? ` <span class="warn small" title="${esc(j.warnings.join('\n'))}">⚠ ${j.warnings.length}</span>` : ''}</td>
+      <td class="small">${esc(j.schedules.map(s => s.text + (s.enabled ? '' : ' (disabled)')).join('; ') || 'no schedule')}</td>
+      <td><div class="timeline">${jobBar(j)}</div></td>
+      <td class="small">${esc(j.history.last_status || '')}<div class="muted">${esc(j.history.last_run || '')}</div></td>
+      <td class="small">${esc(j.history.avg || '')} / ${esc(j.history.max || '')}</td>
+      <td class="small">${Object.keys(j.writes).map(k => `<a class="lnk" onclick="openImpact('${esc(k)}')">${esc(name(k))}</a>`).join(', ')}</td></tr>`).join('')}</table>`;
+}
+function openJob(id) {
+  const j = J[id]; if (!j) return;
+  show('jobs');
+  $('#jobDetail').innerHTML = `<h2>${esc(j.name)} ${j.enabled ? '' : '<span class="tag">disabled</span>'}</h2>
+    <div class="muted small">${esc(j.category || '')} · owner ${esc(j.owner || '')}${j.modified ? ' · modified ' + esc(j.modified.slice(0, 10)) : ''}</div>
+    ${j.description ? `<p>${esc(j.description)}</p>` : ''}
+    ${j.warnings.length ? `<h3>Test / risk notes</h3><ul class="small" style="padding-left:18px;margin:0">${j.warnings.map(w => `<li class="warn">${esc(w)}</li>`).join('')}</ul>` : ''}
+    <h3>Schedules</h3>${j.schedules.length ? j.schedules.map(s => `<div>${esc(s.text)} ${s.enabled ? '' : '<span class="tag">disabled</span>'} <span class="muted small">${s.next_run ? 'next ' + esc(s.next_run) : ''}</span></div>`).join('') : '<div class="muted">None.</div>'}
+    <h3>Run history (last 30 days)</h3><div class="small">${j.history.runs_30d ?? '–'} runs · ${j.history.failures_30d ?? '–'} failed · avg ${esc(j.history.avg || '–')} · max ${esc(j.history.max || '–')} · last: ${esc(j.history.last_status || '–')} ${esc(j.history.last_run || '')} ${j.history.last_duration ? '(' + esc(j.history.last_duration) + ')' : ''}</div>
+    <h3>Steps</h3>${j.steps.map(st => `<div class="card" style="margin-bottom:8px"><b>${st.id}. ${esc(st.name)}</b> <span class="tag">${esc(st.subsystem)}</span> <span class="muted small">${esc(st.database || '')}</span>
+      <div class="small muted">on success: ${esc(st.on_success)} · on failure: <span class="${/success/.test(st.on_fail) ? 'warn' : ''}">${esc(st.on_fail)}</span>${st.retries ? ' · retries ' + st.retries : ''}</div>
+      <pre class="cmd">${esc(st.command)}</pre>
+      ${st.calls.length ? `<div class="small">Runs: ${st.calls.map(c => `<a class="lnk" onclick="openModule('${esc(c)}')">${esc(name(c))}</a>`).join(', ')}</div>` : ''}</div>`).join('')}
+    <h3>Procedures executed (including nested calls)</h3>${j.procedures.length ? j.procedures.map(p => `<a class="lnk" onclick="openModule('${esc(p)}')">${esc(name(p))}</a>`).join(', ') : '<div class="muted">None.</div>'}
+    <h3>Tables written</h3>${Object.keys(j.writes).length ? `<table class="grid"><tr><th>Table</th><th>By</th></tr>${Object.entries(j.writes).map(([k, v]) => `<tr><td><a class="lnk" onclick="openImpact('${esc(k)}')">${esc(name(k))}</a></td><td class="small">${esc(v.map(name).join(', '))}</td></tr>`).join('')}</table>` : '<div class="muted">None found.</div>'}
+    ${j.fires_triggers.length ? `<h3>Triggers fired</h3>${esc(j.fires_triggers.map(name).join(', '))}` : ''}
+    <h3>Tables read</h3><div class="small">${Object.keys(j.reads).map(k => esc(name(k))).join(', ') || '<span class="muted">None found.</span>'}</div>`;
+}
+$('#jobSearch').oninput = renderJobList;
+
+// ---------- review
+function renderReview() {
+  const issues = D.modules.filter(m => m.encrypted || m.dynamic_sql || m.unresolved.length || m.external.length);
+  const noPk = D.tables.filter(t => t.kind === 'table' && !t.pk.length);
+  const unused = D.tables.filter(t => t.kind === 'table' && !(usageBy[t.key] || []).length);
+  $('#reviewOut').innerHTML = `
+    <h3>Objects needing manual review (${issues.length})</h3>
+    ${issues.length ? `<table class="grid"><tr><th>Object</th><th>Issue</th></tr>${issues.map(m => `<tr><td><a class="lnk" onclick="openModule('${esc(m.key)}')">${esc(m.display)}</a></td><td class="small">${[
+      m.encrypted && 'encrypted', m.dynamic_sql && 'dynamic SQL (lines ' + m.dynamic_lines.join(', ') + ')',
+      m.unresolved.length && 'unknown names: ' + m.unresolved.join(', '), m.external.length && 'cross-database: ' + m.external.join(', ')].filter(Boolean).map(esc).join(' · ')}</td></tr>`).join('')}</table>` : '<div class="muted">None.</div>'}
+    ${D.errors.length ? `<h3>Analyzer errors</h3>${D.errors.map(e => `<div>${esc(e.object)}: <span class="muted">${esc(e.error)}</span></div>`).join('')}` : ''}
+    ${(() => { const bad = D.modules.flatMap(m => (m.errors || []).filter(e => e.warning).map(e => [m, e])); return bad.length ? `<h3>Suspicious error handling (${bad.length})</h3><table class="grid"><tr><th>Object</th><th>Line</th><th>Message</th><th>Issue</th></tr>${bad.map(([m, e]) => `<tr><td><a class="lnk" onclick="openModule('${esc(m.key)}')">${esc(m.display)}</a></td><td>${e.line}</td><td class="small">${esc(e.message)}</td><td class="small warn">${esc(e.warning)}</td></tr>`).join('')}</table>` : ''; })()}
+    ${(D.jobs || []).some(j => j.warnings.length) ? `<h3>Batch job risks</h3><table class="grid"><tr><th>Job</th><th>Issue</th></tr>${D.jobs.flatMap(j => j.warnings.map(w => `<tr><td><a class="lnk" onclick="openJob('${esc(j.id)}')">${esc(j.name)}</a></td><td class="small">${esc(w)}</td></tr>`)).join('')}</table>` : ''}
+    <h3>Procedures by test risk</h3>
+    <table class="grid"><tr><th>Procedure</th><th>Risk</th><th>Why</th></tr>${D.modules.filter(m => m.type_code === 'P' && m.risk).sort((a, b) => b.risk.score - a.risk.score).map(m => `<tr><td><a class="lnk" onclick="openModule('${esc(m.key)}')">${esc(m.display)}</a></td><td><b>${m.risk.score}</b></td><td class="small">${esc(m.risk.reasons.join(', '))}</td></tr>`).join('')}</table>
+    <h3>Sensitive columns (mask in test data, logs and AI context)</h3>
+    ${(() => { const s = D.tables.flatMap(t => t.columns.filter(c => c.sensitive).map(c => [t, c])); return s.length ? `<table class="grid"><tr><th>Table</th><th>Column</th><th>Category</th><th>Format</th></tr>${s.map(([t, c]) => `<tr><td>${esc(t.display)}</td><td>${esc(c.name)}</td><td>🔒 ${esc(c.sensitive)}</td><td class="small muted">${esc((c.profile?.formats || []).map(f => f[0]).join(' / '))}</td></tr>`).join('')}</table><div class="small muted">Wrong? Adjust config.ini [sensitive] include / exclude.</div>` : '<div class="muted">None detected.</div>'; })()}
+    <h3>Column prefixes detected (check these; fix wrong ones in config.ini [prefix_overrides])</h3>
+    <table class="grid"><tr><th>Table</th><th>Prefix</th><th>How</th><th>Coverage</th><th>Example</th></tr>${D.tables.filter(t => t.kind === 'table').map(t => `<tr><td>${esc(t.display)}</td><td><b>${esc(t.prefix || '—')}</b></td><td class="muted">${esc(t.prefix_method)}</td><td class="muted">${Math.round(t.prefix_coverage * 100)}%</td><td class="small muted">${esc(t.columns.slice(0, 3).map(c => c.name + ' → ' + c.logical).join(', '))}</td></tr>`).join('')}</table>
+    <h3>Logical key groups</h3>
+    <table class="grid"><tr><th>Logical name</th><th>Tables</th><th>Status</th><th>Columns</th></tr>${D.key_groups.map(g => `<tr><td><b>${esc(g.logical)}</b></td><td>${g.tables}</td><td class="small">${esc(g.status)}</td><td class="small muted">${esc((g.members || []).join(', '))}</td></tr>`).join('')}</table>
+    <h3>Tables without a primary key (${noPk.length})</h3><div class="small">${noPk.map(t => esc(t.display)).join(', ') || 'None.'}</div>
+    <h3>Tables not referenced by any procedure, view, trigger or function (${unused.length})</h3><div class="small">${unused.map(t => esc(t.display)).join(', ') || 'None.'}</div>`;
+}
+
+renderTableList();
+renderModList();
+renderJobList();
+renderReview();
+fillImpactColumns();
+renderImpact();
+// Deep links: #table=dbo.trade&view=impact&column=trdclient  or  #module=dbo.usp_x
+const H = new URLSearchParams(location.hash.slice(1));
+if (H.get('table') && T[H.get('table')]) {
+  selectTable(H.get('table'));
+  if (H.get('view') === 'impact') {
+    openImpact(H.get('table'));
+    if (H.get('column')) { $('#impColumn').value = H.get('column'); renderImpact(); }
+  }
+} else drawGraph();
+if (H.get('module') && M[H.get('module')]) openModule(H.get('module'));
+else if (H.get('job') && J[H.get('job')]) openJob(H.get('job'));
+else if (H.get('view') && H.get('view') !== 'impact') show(H.get('view'));
+</script>
+</body>
+</html>

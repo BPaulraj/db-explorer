@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+.pytest_cache/
+config.ini
+cache/
+output/
+tests/fixture/
+# Generated from your real database: keep it in your company's private repository, never in this public one.
+knowledge/
